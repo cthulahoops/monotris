@@ -1,27 +1,89 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui;
+  font-size: 1.2rem;
+}
+
 .App {
+  height: 100vh;
   text-align: center;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1em;
+}
+
+h1 {
+  margin: 0;
+  background-color: firebrick;
+  color: white;
+  padding: 0.5em;
+}
+
+.footer {
+  height: 2rem;
+  width: 100%;
+  background-color: firebrick;
 }
 
 .game {
+  height: 100%;
+  flex-grow: 1;
   display: flex;
   margin: 0 auto;
   gap: 3em;
   justify-content: center;
+  align-items: stretch;
 }
 
 .board {
+  height: 100%;
+  aspect-ratio: 1 / 2;
   display: grid;
-  grid-template-columns: repeat(10, auto);
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(20, 1fr);
   border: 1px solid black;
 }
 
+.panel {
+  color: firebrick;
+  display: flex;
+  gap: 1em;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.score-value {
+  font-size: 3em;
+  font-weight: bold;
+  margin: 0;
+}
+
 .empty, .filled {
-  border: 1px solid green;
   background-color: #282c34;
-  aspect-ratio: 1;
-  height: 3vh;
+  aspect-ratio: 1 / 1;
+  height: 100%;
+  width: auto;
+  min-width: 10px;
+  min-height: 5px;
 }
 
 .filled {
   background-color: tomato;
+  box-shadow: 0px 0px 0px 2px firebrick inset;
+}
+
+.preview {
+  background-color: black;
+  padding: 1em;
+}
+
+button {
+  background-color: tomato;
+  border: 0;
+  padding: 1em;
+  border: 1px solid firebrick;
+  border-radius: 5px;
+  font-weight: 500;
 }

@@ -145,12 +145,19 @@ function App() {
         }
         </div>
         <div class="panel">
-          <p>Score: {gameState.score}</p>
+          <div>Score: <p class="score-value">{gameState.score}</p></div>
           <div>
-            Preview
-            <div className="filled" />
+            Next Block:
+            <div className="preview">
+              <div className="filled" />
+            </div>
+          </div>
+          <div>
+            <button onClick={() => setGameState(newGame)}>New Game</button>
           </div>
         </div>
+      </div>
+      <div className="footer">
       </div>
     </div>
   );
