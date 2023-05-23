@@ -21,9 +21,16 @@ h1 {
 }
 
 .footer {
-  height: 2rem;
   width: 100%;
   background-color: firebrick;
+  text-align: right;
+}
+
+.footer a {
+  display: block;
+  margin: auto;
+  color: white;
+  padding: 0.5em;
 }
 
 .game {

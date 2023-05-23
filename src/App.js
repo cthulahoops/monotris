@@ -158,6 +158,7 @@ function App() {
         </div>
       </div>
       <div className="footer">
+        <a href="https://github.com/cthulahoops/monotris/">Github</a>
       </div>
     </div>
   );
