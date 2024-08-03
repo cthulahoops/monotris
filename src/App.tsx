@@ -205,6 +205,15 @@ function handleInput(gameState : GameState, keyCode : number) : GameState {
     }
 }
 
+function useEventListener(eventName : string, handler : any) {
+  useEffect(() => {
+    document.addEventListener(eventName, handler);
+    return () => {
+      document.removeEventListener(eventName, handler);
+    };
+  }, []);
+}
+
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(newGame());
   const tick = useGameClock();
@@ -217,16 +226,10 @@ export default function App() {
     setGameState((gameState) => movePieceChecked(gameState, DOWN));
   }, [tick]);
 
-  useEffect(() => {
-    const handleArrowKeys = (event : any) => {
+  useEventListener('keydown', (event : any) => {
       const keyCode = event.keyCode;
       setGameState((gameState) => handleInput(gameState, keyCode));
-    };
-    document.addEventListener('keydown', handleArrowKeys);
-    return () => {
-      document.removeEventListener('keydown', handleArrowKeys);
-    };
-  }, []);
+    });
 
   const activePieceCoords = piece_coords(gameState.activePiece);
 
