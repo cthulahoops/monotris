@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+const TICK_INTERVAL_MS = 100;
+
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
@@ -106,16 +108,20 @@ function isPieceBelow(gameState : GameState) {
   return gameState.board[(gameState.activePiece.y + 1) * BOARD_WIDTH + gameState.activePiece.x];
 }
 
-export default function App() {
-  const [gameState, setGameState] = useState<GameState>(newGame());
+function useGameClock() {
   const [tick, setTick] = useState(0);
-
   useEffect(() => {
     const timer = setInterval(() => {
       setTick((tick) => tick + 1);
-    }, 100);
+    }, TICK_INTERVAL_MS);
     return () => clearInterval(timer);
   }, []);
+  return tick;
+}
+
+export default function App() {
+  const [gameState, setGameState] = useState<GameState>(newGame());
+  const tick = useGameClock();
 
   useEffect(() => {
     if (gameState.activePiece.y === BOARD_HEIGHT - 1 || isPieceBelow(gameState)) {
