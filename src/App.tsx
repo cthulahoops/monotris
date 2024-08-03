@@ -24,6 +24,19 @@ type Piece = {
 
 type Board = boolean[];
 
+function rotatePiece(piece : Piece) {
+  const newBlocks = piece.blocks.map((block) => {
+    return {
+      x: block.y,
+      y: -block.x
+    };
+  });
+  return {
+    ...piece,
+    blocks: newBlocks
+  };
+}
+
 function piece_coords(piece : Piece) : Coord[] {
   return piece.blocks.map((block) => {
     return {
@@ -153,6 +166,17 @@ function useGameClock() {
   return tick;
 }
 
+function setPiece(gameState : GameState, piece : Piece) {
+  if (isPieceColliding(gameState.board, piece)) {
+    return gameState;
+  }
+  return {
+    ...gameState,
+    activePiece: piece
+  };
+}
+
+
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(newGame());
   const tick = useGameClock();
@@ -174,6 +198,11 @@ export default function App() {
           break;
         case 39: // Right arrow
           setGameState((gameState) => movePieceChecked(gameState, 1, 0));
+          break;
+        case 38: // Up arrow
+          setGameState((gameState) => {
+            return setPiece(gameState, rotatePiece(gameState.activePiece));
+          });
           break;
         case 40: // Down arrow
           setGameState((gameState) => movePieceChecked(gameState, 0, 1));
