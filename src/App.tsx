@@ -183,6 +183,27 @@ const LEFT = {x: -1, y: 0};
 const RIGHT = {x: 1, y: 0};
 const DOWN = {x: 0, y: 1};
 
+const KEY_LEFT = 37;
+const KEY_RIGHT = 39;
+const KEY_UP = 38;
+const KEY_DOWN = 40;
+
+function handleInput(gameState : GameState, keyCode : number) : GameState {
+    switch (keyCode) {
+      case KEY_LEFT:
+        return movePieceChecked(gameState, LEFT);
+      case KEY_RIGHT:
+        return movePieceChecked(gameState, RIGHT);
+        break;
+      case KEY_UP:
+        return setPiece(gameState, rotatePiece(gameState.activePiece));
+      case KEY_DOWN: // Down arrow
+        return movePieceChecked(gameState, DOWN);
+      default:
+        return gameState;
+    }
+}
+
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(newGame());
   const tick = useGameClock();
@@ -192,30 +213,13 @@ export default function App() {
       setGameState(respawnPiece);
       return
     }
-    setGameState(movePieceChecked(gameState, DOWN));
+    setGameState((gameState) => movePieceChecked(gameState, DOWN));
   }, [tick]);
 
   useEffect(() => {
     const handleArrowKeys = (event : any) => {
       const keyCode = event.keyCode;
-      switch (keyCode) {
-        case 37: // Left arrow
-          setGameState((gameState) => movePieceChecked(gameState, LEFT));
-          break;
-        case 39: // Right arrow
-          setGameState((gameState) => movePieceChecked(gameState, RIGHT));
-          break;
-        case 38: // Up arrow
-          setGameState((gameState) => {
-            return setPiece(gameState, rotatePiece(gameState.activePiece));
-          });
-          break;
-        case 40: // Down arrow
-          setGameState((gameState) => movePieceChecked(gameState, DOWN));
-          break;
-        default:
-          break;
-      }
+      setGameState((gameState) => handleInput(gameState, keyCode));
     };
     document.addEventListener('keydown', handleArrowKeys);
     return () => {
