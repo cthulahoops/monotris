@@ -140,12 +140,15 @@ function respawnPiece(gameState : GameState) {
   newGameState.activePiece = newPiece();
   newGameState.board = fixPieceToBoard(gameState.board, gameState.activePiece);
 
-  if (checkFullRow(newGameState, BOARD_HEIGHT - 1)) {
+  let score = 0;
+
+  while (checkFullRow(newGameState, BOARD_HEIGHT - 1)) {
     newGameState.board.splice(BOARD_WIDTH * (BOARD_HEIGHT - 1), BOARD_WIDTH);
     for (let y = 0; y < BOARD_WIDTH; y++) {
       newGameState.board.unshift(false);
+      score += 1
     }
-    newGameState.score += 1;
+    newGameState.score += (score * (score + 1)) / 2;
   }
   return newGameState;
 }
