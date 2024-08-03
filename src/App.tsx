@@ -18,10 +18,20 @@ type Coord = {
 };
 
 type Piece = {
-  position: Coord
+  position: Coord,
+  blocks: Coord[]
 };
 
 type Board = boolean[];
+
+function piece_coords(piece : Piece) : Coord[] {
+  return piece.blocks.map((block) => {
+    return {
+      x: piece.position.x + block.x,
+      y: piece.position.y + block.y
+    };
+  });
+}
 
 function index_to_coords(index : number) : Coord {
   return {
@@ -41,10 +51,11 @@ function empty_board() : Board {
 
 function fixPieceToBoard(board : Board, piece : Piece) {
   const newBoard = [...board];
-  newBoard[piece.position.y * BOARD_WIDTH + piece.position.x] = true;
+  for (const block of piece_coords(piece)) {
+    newBoard[block.y * BOARD_WIDTH + block.x] = true;
+  }
   return newBoard;
 }
-
 
 
 function newPiece() : Piece {
@@ -52,7 +63,11 @@ function newPiece() : Piece {
     position: {
       x: Math.floor(BOARD_WIDTH / 2),
       y: 0
-    }
+    },
+    blocks: [
+      {x: 0, y: 0},
+      {x: 1, y: 0},
+    ]
   };
 }
 function newGame() : GameState {
@@ -73,8 +88,12 @@ function movePiece(piece : Piece, offset : Coord) {
   };
 }
 
-function isPieceOutOfBounds(piece : Piece) {
-  return piece.position.x < 0 || piece.position.x >= BOARD_WIDTH || piece.position.y < 0 || piece.position.y >= BOARD_HEIGHT;
+function isOutOfBounds(coord : Coord) {
+  return coord.x < 0 || coord.x >= BOARD_WIDTH || coord.y < 0 || coord.y >= BOARD_HEIGHT;
+}
+
+function isPieceColliding(board : Board, piece : Piece) {
+  return piece_coords(piece).some((block) => isOutOfBounds(block) || isFilled(board, block));
 }
 
 function isFilled(board : Board, coords : Coord) {
@@ -84,7 +103,7 @@ function isFilled(board : Board, coords : Coord) {
 function movePieceChecked(gameState : GameState, x : number, y : number) {
   const newPiece = movePiece(gameState.activePiece, {x, y});
 
-  if (isPieceOutOfBounds(newPiece) || isFilled(gameState.board, newPiece.position)) {
+  if (isPieceColliding(gameState.board, newPiece)) {
     return gameState;
   }
 
@@ -96,7 +115,7 @@ function movePieceChecked(gameState : GameState, x : number, y : number) {
 
 function checkFullRow(gameState : GameState, y : number) {
   for (let x = 0; x < BOARD_WIDTH; x++) {
-    if (!gameState.board[y * BOARD_WIDTH + x]) {
+    if (!isFilled(gameState.board, {x, y})) {
       return false;
     }
   }
@@ -169,6 +188,8 @@ export default function App() {
     };
   }, []);
 
+  const activePieceCoords = piece_coords(gameState.activePiece);
+
   return (
     <div className="App">
       <h1>Monotris</h1>
@@ -177,7 +198,7 @@ export default function App() {
         {
           gameState.board.map((value, index) => {
             const coords = index_to_coords(index);
-            return <div key={index} className={value || gameState.activePiece.position.x === coords.x && gameState.activePiece.position.y === coords.y ? "filled" : "empty"} />;
+            return <div key={index} className={value || activePieceCoords.some((piece) => piece.x == coords.x && piece.y == coords.y) ? "filled" : "empty"} />;
           })
         }
         </div>
