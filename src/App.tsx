@@ -106,11 +106,11 @@ function isOutOfBounds(coord : Coord) {
 }
 
 function isPieceColliding(board : Board, piece : Piece) {
-  return piece_coords(piece).some((block) => isOutOfBounds(block) || isFilled(board, block));
+  return piece_coords(piece).some((block) => isFilled(board, block));
 }
 
 function isFilled(board : Board, coords : Coord) {
-  return board[coords.y * BOARD_WIDTH + coords.x];
+  return board[coords.y * BOARD_WIDTH + coords.x] || isOutOfBounds(coords);
 }
 
 function movePieceChecked(gameState : GameState, offset : Coord) {
@@ -155,7 +155,8 @@ function respawnPiece(gameState : GameState) {
 
 
 function isPieceOnGround(gameState : GameState) {
-  return gameState.activePiece.position.y === BOARD_HEIGHT - 1 || isFilled(gameState.board, {x: gameState.activePiece.position.x, y: gameState.activePiece.position.y + 1});
+  return piece_coords(gameState.activePiece).some(
+    (pos) => isFilled(gameState.board, {x: pos.x, y: pos.y + 1}));
 }
 
 function useGameClock() {
