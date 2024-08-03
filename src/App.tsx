@@ -113,8 +113,8 @@ function isFilled(board : Board, coords : Coord) {
   return board[coords.y * BOARD_WIDTH + coords.x];
 }
 
-function movePieceChecked(gameState : GameState, x : number, y : number) {
-  const newPiece = movePiece(gameState.activePiece, {x, y});
+function movePieceChecked(gameState : GameState, offset : Coord) {
+  const newPiece = movePiece(gameState.activePiece, offset);
 
   if (isPieceColliding(gameState.board, newPiece)) {
     return gameState;
@@ -176,6 +176,9 @@ function setPiece(gameState : GameState, piece : Piece) {
   };
 }
 
+const LEFT = {x: -1, y: 0};
+const RIGHT = {x: 1, y: 0};
+const DOWN = {x: 0, y: 1};
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(newGame());
@@ -186,7 +189,7 @@ export default function App() {
       setGameState(respawnPiece);
       return
     }
-    setGameState(movePieceChecked(gameState, 0, 1));
+    setGameState(movePieceChecked(gameState, DOWN));
   }, [tick]);
 
   useEffect(() => {
@@ -194,10 +197,10 @@ export default function App() {
       const keyCode = event.keyCode;
       switch (keyCode) {
         case 37: // Left arrow
-          setGameState((gameState) => movePieceChecked(gameState, -1, 0));
+          setGameState((gameState) => movePieceChecked(gameState, LEFT));
           break;
         case 39: // Right arrow
-          setGameState((gameState) => movePieceChecked(gameState, 1, 0));
+          setGameState((gameState) => movePieceChecked(gameState, RIGHT));
           break;
         case 38: // Up arrow
           setGameState((gameState) => {
@@ -205,7 +208,7 @@ export default function App() {
           });
           break;
         case 40: // Down arrow
-          setGameState((gameState) => movePieceChecked(gameState, 0, 1));
+          setGameState((gameState) => movePieceChecked(gameState, DOWN));
           break;
         default:
           break;
