@@ -1,18 +1,33 @@
-import { useState, useEffect, useRef } from 'react';
-import logo from './logo.svg';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
-function index_to_coords(index) {
+type GameState = {
+  board: boolean[];
+  activePiece: {
+    x: number;
+    y: number;
+  };
+  score: number;
+};
+
+type Coord = {
+  x: number;
+  y: number;
+};
+
+type Board = boolean[];
+
+function index_to_coords(index : number) : Coord {
   return {
     x: index % BOARD_WIDTH,
     y: Math.floor(index / BOARD_WIDTH)
   };
 }
 
-function empty_board() {
+function empty_board() : Board {
   const board = [];
   for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++) {
     board.push(false);
@@ -21,11 +36,13 @@ function empty_board() {
   return board;
 }
 
-function addPiece(board, x, y) {
+function addPiece(board : Board, x : number, y : number) {
   const newBoard = [...board];
   newBoard[y * BOARD_WIDTH + x] = true;
   return newBoard;
 }
+
+
 
 function newGame() {
   return {
@@ -38,7 +55,7 @@ function newGame() {
   };
 }
 
-function movePiece(gameState, x, y) {
+function movePiece(gameState : GameState, x : number, y : number) {
   if (gameState.activePiece.x + x < 0 || gameState.activePiece.x + x >= BOARD_WIDTH) {
     return gameState;
   }
@@ -55,7 +72,7 @@ function movePiece(gameState, x, y) {
   return newGameState;
 }
 
-function checkFullRow(gameState, y) {
+function checkFullRow(gameState : GameState, y : number) {
   for (let x = 0; x < BOARD_WIDTH; x++) {
     if (!gameState.board[y * BOARD_WIDTH + x]) {
       return false;
@@ -64,7 +81,7 @@ function checkFullRow(gameState, y) {
   return true;
 }
 
-function respawnPiece(gameState) {
+function respawnPiece(gameState : GameState) {
   const newGameState = {...gameState};
   newGameState.activePiece = {
     x: Math.floor(BOARD_WIDTH / 2),
@@ -85,13 +102,12 @@ function respawnPiece(gameState) {
   return newGameState;
 }
 
-function isPieceBelow(gameState) {
+function isPieceBelow(gameState : GameState) {
   return gameState.board[(gameState.activePiece.y + 1) * BOARD_WIDTH + gameState.activePiece.x];
 }
 
-
-function App() {
-  const [gameState, setGameState] = useState(newGame());
+export default function App() {
+  const [gameState, setGameState] = useState<GameState>(newGame());
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -110,7 +126,7 @@ function App() {
   }, [tick]);
 
   useEffect(() => {
-    const handleArrowKeys = (event) => {
+    const handleArrowKeys = (event : any) => {
       const keyCode = event.keyCode;
       switch (keyCode) {
         case 37: // Left arrow
@@ -163,5 +179,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
