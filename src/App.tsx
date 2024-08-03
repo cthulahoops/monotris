@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
+import { useGameClock, useEventListener } from "./hooks";
+
 const TICK_INTERVAL_MS = 100;
 
 const BOARD_WIDTH = 10;
@@ -162,17 +164,6 @@ function isPieceOnGround(gameState: GameState) {
   );
 }
 
-function useGameClock() {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTick((tick) => tick + 1);
-    }, TICK_INTERVAL_MS);
-    return () => clearInterval(timer);
-  }, []);
-  return tick;
-}
-
 function setPiece(gameState: GameState, piece: Piece) {
   if (isPieceColliding(gameState.board, piece)) {
     return gameState;
@@ -208,18 +199,9 @@ function handleInput(gameState: GameState, keyCode: number): GameState {
   }
 }
 
-function useEventListener(eventName: string, handler: any) {
-  useEffect(() => {
-    document.addEventListener(eventName, handler);
-    return () => {
-      document.removeEventListener(eventName, handler);
-    };
-  }, []);
-}
-
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(newGame());
-  const tick = useGameClock();
+  const tick = useGameClock(TICK_INTERVAL_MS);
 
   useEffect(() => {
     if (isPieceOnGround(gameState)) {
@@ -230,8 +212,7 @@ export default function App() {
   }, [tick]);
 
   useEventListener("keydown", (event: any) => {
-    const keyCode = event.keyCode;
-    setGameState((gameState) => handleInput(gameState, keyCode));
+    setGameState((gameState) => handleInput(gameState, event.keyCode));
   });
 
   const activePieceCoords = piece_coords(gameState.activePiece);
