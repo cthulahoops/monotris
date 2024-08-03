@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import { useState, useEffect } from "react";
+import "./App.css";
 
 const TICK_INTERVAL_MS = 100;
 
@@ -18,51 +18,50 @@ type Coord = {
 };
 
 type Piece = {
-  position: Coord,
-  blocks: Coord[]
+  position: Coord;
+  blocks: Coord[];
 };
 
 type Board = boolean[];
 
-function rotatePiece(piece : Piece) {
+function rotatePiece(piece: Piece) {
   const newBlocks = piece.blocks.map((block) => {
     return {
       x: block.y,
-      y: -block.x
+      y: -block.x,
     };
   });
   return {
     ...piece,
-    blocks: newBlocks
+    blocks: newBlocks,
   };
 }
 
-function piece_coords(piece : Piece) : Coord[] {
+function piece_coords(piece: Piece): Coord[] {
   return piece.blocks.map((block) => {
     return {
       x: piece.position.x + block.x,
-      y: piece.position.y + block.y
+      y: piece.position.y + block.y,
     };
   });
 }
 
-function index_to_coords(index : number) : Coord {
+function index_to_coords(index: number): Coord {
   return {
     x: index % BOARD_WIDTH,
-    y: Math.floor(index / BOARD_WIDTH)
+    y: Math.floor(index / BOARD_WIDTH),
   };
 }
 
-function empty_board() : Board {
+function empty_board(): Board {
   const board = [];
   for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++) {
     board.push(false);
-
   }
   return board;
 }
 
-function fixPieceToBoard(board : Board, piece : Piece) {
+function fixPieceToBoard(board: Board, piece: Piece) {
   const newBoard = [...board];
   for (const block of piece_coords(piece)) {
     newBoard[block.y * BOARD_WIDTH + block.x] = true;
@@ -70,50 +69,54 @@ function fixPieceToBoard(board : Board, piece : Piece) {
   return newBoard;
 }
 
-
-function newPiece() : Piece {
+function newPiece(): Piece {
   return {
     position: {
       x: Math.floor(BOARD_WIDTH / 2),
-      y: 0
+      y: 0,
     },
     blocks: [
-      {x: 0, y: 0},
-      {x: 1, y: 0},
-    ]
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+    ],
   };
 }
-function newGame() : GameState {
+function newGame(): GameState {
   return {
     board: empty_board(),
     activePiece: newPiece(),
-    score: 0
+    score: 0,
   };
 }
 
-function movePiece(piece : Piece, offset : Coord) {
+function movePiece(piece: Piece, offset: Coord) {
   return {
     ...piece,
     position: {
       x: piece.position.x + offset.x,
-      y: piece.position.y + offset.y
-    }
+      y: piece.position.y + offset.y,
+    },
   };
 }
 
-function isOutOfBounds(coord : Coord) {
-  return coord.x < 0 || coord.x >= BOARD_WIDTH || coord.y < 0 || coord.y >= BOARD_HEIGHT;
+function isOutOfBounds(coord: Coord) {
+  return (
+    coord.x < 0 ||
+    coord.x >= BOARD_WIDTH ||
+    coord.y < 0 ||
+    coord.y >= BOARD_HEIGHT
+  );
 }
 
-function isPieceColliding(board : Board, piece : Piece) {
+function isPieceColliding(board: Board, piece: Piece) {
   return piece_coords(piece).some((block) => isFilled(board, block));
 }
 
-function isFilled(board : Board, coords : Coord) {
+function isFilled(board: Board, coords: Coord) {
   return board[coords.y * BOARD_WIDTH + coords.x] || isOutOfBounds(coords);
 }
 
-function movePieceChecked(gameState : GameState, offset : Coord) {
+function movePieceChecked(gameState: GameState, offset: Coord) {
   const newPiece = movePiece(gameState.activePiece, offset);
 
   if (isPieceColliding(gameState.board, newPiece)) {
@@ -122,21 +125,21 @@ function movePieceChecked(gameState : GameState, offset : Coord) {
 
   return {
     ...gameState,
-    activePiece: newPiece
+    activePiece: newPiece,
   };
 }
 
-function checkFullRow(gameState : GameState, y : number) {
+function checkFullRow(gameState: GameState, y: number) {
   for (let x = 0; x < BOARD_WIDTH; x++) {
-    if (!isFilled(gameState.board, {x, y})) {
+    if (!isFilled(gameState.board, { x, y })) {
       return false;
     }
   }
   return true;
 }
 
-function respawnPiece(gameState : GameState) {
-  const newGameState = {...gameState};
+function respawnPiece(gameState: GameState) {
+  const newGameState = { ...gameState };
   newGameState.activePiece = newPiece();
   newGameState.board = fixPieceToBoard(gameState.board, gameState.activePiece);
 
@@ -146,17 +149,17 @@ function respawnPiece(gameState : GameState) {
     newGameState.board.splice(BOARD_WIDTH * (BOARD_HEIGHT - 1), BOARD_WIDTH);
     for (let y = 0; y < BOARD_WIDTH; y++) {
       newGameState.board.unshift(false);
-      score += 1
+      score += 1;
     }
     newGameState.score += (score * (score + 1)) / 2;
   }
   return newGameState;
 }
 
-
-function isPieceOnGround(gameState : GameState) {
-  return piece_coords(gameState.activePiece).some(
-    (pos) => isFilled(gameState.board, {x: pos.x, y: pos.y + 1}));
+function isPieceOnGround(gameState: GameState) {
+  return piece_coords(gameState.activePiece).some((pos) =>
+    isFilled(gameState.board, { x: pos.x, y: pos.y + 1 }),
+  );
 }
 
 function useGameClock() {
@@ -170,42 +173,42 @@ function useGameClock() {
   return tick;
 }
 
-function setPiece(gameState : GameState, piece : Piece) {
+function setPiece(gameState: GameState, piece: Piece) {
   if (isPieceColliding(gameState.board, piece)) {
     return gameState;
   }
   return {
     ...gameState,
-    activePiece: piece
+    activePiece: piece,
   };
 }
 
-const LEFT = {x: -1, y: 0};
-const RIGHT = {x: 1, y: 0};
-const DOWN = {x: 0, y: 1};
+const LEFT = { x: -1, y: 0 };
+const RIGHT = { x: 1, y: 0 };
+const DOWN = { x: 0, y: 1 };
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;
 const KEY_UP = 38;
 const KEY_DOWN = 40;
 
-function handleInput(gameState : GameState, keyCode : number) : GameState {
-    switch (keyCode) {
-      case KEY_LEFT:
-        return movePieceChecked(gameState, LEFT);
-      case KEY_RIGHT:
-        return movePieceChecked(gameState, RIGHT);
-        break;
-      case KEY_UP:
-        return setPiece(gameState, rotatePiece(gameState.activePiece));
-      case KEY_DOWN: // Down arrow
-        return movePieceChecked(gameState, DOWN);
-      default:
-        return gameState;
-    }
+function handleInput(gameState: GameState, keyCode: number): GameState {
+  switch (keyCode) {
+    case KEY_LEFT:
+      return movePieceChecked(gameState, LEFT);
+    case KEY_RIGHT:
+      return movePieceChecked(gameState, RIGHT);
+      break;
+    case KEY_UP:
+      return setPiece(gameState, rotatePiece(gameState.activePiece));
+    case KEY_DOWN: // Down arrow
+      return movePieceChecked(gameState, DOWN);
+    default:
+      return gameState;
+  }
 }
 
-function useEventListener(eventName : string, handler : any) {
+function useEventListener(eventName: string, handler: any) {
   useEffect(() => {
     document.addEventListener(eventName, handler);
     return () => {
@@ -221,15 +224,15 @@ export default function App() {
   useEffect(() => {
     if (isPieceOnGround(gameState)) {
       setGameState(respawnPiece);
-      return
+      return;
     }
     setGameState((gameState) => movePieceChecked(gameState, DOWN));
   }, [tick]);
 
-  useEventListener('keydown', (event : any) => {
-      const keyCode = event.keyCode;
-      setGameState((gameState) => handleInput(gameState, keyCode));
-    });
+  useEventListener("keydown", (event: any) => {
+    const keyCode = event.keyCode;
+    setGameState((gameState) => handleInput(gameState, keyCode));
+  });
 
   const activePieceCoords = piece_coords(gameState.activePiece);
 
@@ -238,15 +241,27 @@ export default function App() {
       <h1>Monotris</h1>
       <div className="game">
         <div className="board">
-        {
-          gameState.board.map((value, index) => {
+          {gameState.board.map((value, index) => {
             const coords = index_to_coords(index);
-            return <div key={index} className={value || activePieceCoords.some((piece) => piece.x == coords.x && piece.y == coords.y) ? "filled" : "empty"} />;
-          })
-        }
+            return (
+              <div
+                key={index}
+                className={
+                  value ||
+                  activePieceCoords.some(
+                    (piece) => piece.x == coords.x && piece.y == coords.y,
+                  )
+                    ? "filled"
+                    : "empty"
+                }
+              />
+            );
+          })}
         </div>
         <div className="panel">
-          <div>Score: <p className="score-value">{gameState.score}</p></div>
+          <div>
+            Score: <p className="score-value">{gameState.score}</p>
+          </div>
           <div>
             Next Block:
             <div className="preview">
