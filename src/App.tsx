@@ -144,8 +144,8 @@ function App() {
           })
         }
         </div>
-        <div class="panel">
-          <div>Score: <p class="score-value">{gameState.score}</p></div>
+        <div className="panel">
+          <div>Score: <p className="score-value">{gameState.score}</p></div>
           <div>
             Next Block:
             <div className="preview">
