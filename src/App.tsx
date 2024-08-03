@@ -131,7 +131,7 @@ function movePieceChecked(gameState: GameState, offset: Coord) {
   };
 }
 
-function checkFullRow(gameState: GameState, y: number) {
+function isFullRow(gameState: GameState, y: number) {
   for (let x = 0; x < BOARD_WIDTH; x++) {
     if (!isFilled(gameState.board, { x, y })) {
       return false;
@@ -140,21 +140,29 @@ function checkFullRow(gameState: GameState, y: number) {
   return true;
 }
 
+function removeRow(board: Board, y: number) {
+  board.splice(BOARD_WIDTH * y, BOARD_WIDTH);
+  for (let x = 0; x < BOARD_WIDTH; x++) {
+    board.unshift(false);
+  }
+}
+
 function respawnPiece(gameState: GameState) {
   const newGameState = { ...gameState };
   newGameState.activePiece = newPiece();
   newGameState.board = fixPieceToBoard(gameState.board, gameState.activePiece);
 
-  let score = 0;
+  let rowsCleared = 0;
 
-  while (checkFullRow(newGameState, BOARD_HEIGHT - 1)) {
-    newGameState.board.splice(BOARD_WIDTH * (BOARD_HEIGHT - 1), BOARD_WIDTH);
-    for (let y = 0; y < BOARD_WIDTH; y++) {
-      newGameState.board.unshift(false);
-      score += 1;
+  for (let y = 0; y < BOARD_HEIGHT; y++) {
+    if (isFullRow(newGameState, y)) {
+      removeRow(newGameState.board, y);
+      rowsCleared += 1;
     }
-    newGameState.score += (score * (score + 1)) / 2;
   }
+
+  newGameState.score += (rowsCleared * (rowsCleared + 1)) / 2;
+
   return newGameState;
 }
 
@@ -192,11 +200,18 @@ function handleInput(gameState: GameState, keyCode: number): GameState {
       break;
     case KEY_UP:
       return setPiece(gameState, rotatePiece(gameState.activePiece));
-    case KEY_DOWN: // Down arrow
+    case KEY_DOWN:
       return movePieceChecked(gameState, DOWN);
     default:
       return gameState;
   }
+}
+
+function handleTick(gameState: GameState): GameState {
+  if (isPieceOnGround(gameState)) {
+    return respawnPiece(gameState);
+  }
+  return movePieceChecked(gameState, DOWN);
 }
 
 export default function App() {
@@ -204,11 +219,7 @@ export default function App() {
   const tick = useGameClock(TICK_INTERVAL_MS);
 
   useEffect(() => {
-    if (isPieceOnGround(gameState)) {
-      setGameState(respawnPiece);
-      return;
-    }
-    setGameState((gameState) => movePieceChecked(gameState, DOWN));
+    setGameState((gameState) => handleTick(gameState));
   }, [tick]);
 
   useEventListener("keydown", (event: any) => {
@@ -246,6 +257,7 @@ export default function App() {
           <div>
             Next Block:
             <div className="preview">
+              <div className="filled" />
               <div className="filled" />
             </div>
           </div>
