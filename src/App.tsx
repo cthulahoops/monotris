@@ -214,7 +214,7 @@ function handleTick(gameState: GameState): GameState {
   return movePieceChecked(gameState, DOWN);
 }
 
-export default function App() {
+function Game() {
   const [gameState, setGameState] = useState<GameState>(newGame());
   const tick = useGameClock(TICK_INTERVAL_MS);
 
@@ -226,46 +226,79 @@ export default function App() {
     setGameState((gameState) => handleInput(gameState, event.keyCode));
   });
 
-  const activePieceCoords = piece_coords(gameState.activePiece);
+  return (
+    <div className="game">
+      <Board board={gameState.board} activePiece={gameState.activePiece} />
+      <div className="panel">
+        <div>
+          Score: <p className="score-value">{gameState.score}</p>
+        </div>
+        <div>
+          Next Block:
+          <Preview piece={gameState.activePiece} />
+        </div>
+        <div>
+          <button onClick={() => setGameState(newGame)}>New Game</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+function Preview({ piece }: { piece: Piece }) {
+  return (
+    <div className="preview">
+      {piece.blocks.map((block, index) => {
+        return (
+          <div
+            key={index}
+            style={{
+              gridRow: block.y + 1,
+              gridColumn: block.x + 1,
+            }}
+            className="filled"
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+type BoardProps = {
+  board: Board;
+  activePiece: Piece;
+};
+
+function Board({ board, activePiece }: BoardProps) {
+  const activePieceCoords = piece_coords(activePiece);
+
+  return (
+    <div className="board">
+      {board.map((value, index) => {
+        const coords = index_to_coords(index);
+        return (
+          <div
+            key={index}
+            className={
+              value ||
+              activePieceCoords.some(
+                (piece) => piece.x == coords.x && piece.y == coords.y,
+              )
+                ? "filled"
+                : "empty"
+            }
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+export default function App() {
   return (
     <div className="App">
       <h1>Monotris</h1>
-      <div className="game">
-        <div className="board">
-          {gameState.board.map((value, index) => {
-            const coords = index_to_coords(index);
-            return (
-              <div
-                key={index}
-                className={
-                  value ||
-                  activePieceCoords.some(
-                    (piece) => piece.x == coords.x && piece.y == coords.y,
-                  )
-                    ? "filled"
-                    : "empty"
-                }
-              />
-            );
-          })}
-        </div>
-        <div className="panel">
-          <div>
-            Score: <p className="score-value">{gameState.score}</p>
-          </div>
-          <div>
-            Next Block:
-            <div className="preview">
-              <div className="filled" />
-              <div className="filled" />
-            </div>
-          </div>
-          <div>
-            <button onClick={() => setGameState(newGame)}>New Game</button>
-          </div>
-        </div>
-      </div>
+      <Game />
       <div className="footer">
         <a href="https://github.com/cthulahoops/monotris/">Github</a>
       </div>

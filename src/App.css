@@ -82,6 +82,7 @@ h1 {
 }
 
 .preview {
+  display: grid;
   background-color: black;
   padding: 1em;
 }
