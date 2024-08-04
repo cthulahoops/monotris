@@ -26,6 +26,7 @@ const TITLES = {
 type GameState = {
   board: boolean[];
   activePiece: Piece;
+  nextPiece: Piece;
   score: number;
 };
 
@@ -102,6 +103,7 @@ function newGame(): GameState {
   return {
     board: empty_board(),
     activePiece: newPiece(),
+    nextPiece: newPiece(),
     score: 0,
   };
 }
@@ -146,9 +148,9 @@ function movePieceChecked(gameState: GameState, offset: Coord) {
   };
 }
 
-function isFullRow(gameState: GameState, y: number) {
+function isFullRow(board: Board, y: number) {
   for (let x = 0; x < BOARD_WIDTH; x++) {
-    if (!isFilled(gameState.board, { x, y })) {
+    if (!isFilled(board, { x, y })) {
       return false;
     }
   }
@@ -163,22 +165,24 @@ function removeRow(board: Board, y: number) {
 }
 
 function respawnPiece(gameState: GameState) {
-  const newGameState = { ...gameState };
-  newGameState.activePiece = newPiece();
-  newGameState.board = fixPieceToBoard(gameState.board, gameState.activePiece);
+  const board = fixPieceToBoard(gameState.board, gameState.activePiece);
 
   let rowsCleared = 0;
 
   for (let y = 0; y < BOARD_HEIGHT; y++) {
-    if (isFullRow(newGameState, y)) {
-      removeRow(newGameState.board, y);
+    if (isFullRow(board, y)) {
+      removeRow(board, y);
       rowsCleared += 1;
     }
   }
 
-  newGameState.score += (rowsCleared * (rowsCleared + 1)) / 2;
-
-  return newGameState;
+  return {
+    ...gameState,
+    board,
+    score: gameState.score + (rowsCleared * (rowsCleared + 1)) / 2,
+    activePiece: gameState.nextPiece,
+    nextPiece: newPiece(),
+  };
 }
 
 function isPieceOnGround(gameState: GameState) {
@@ -250,7 +254,7 @@ function Game() {
         </div>
         <div>
           Next Block:
-          <Preview piece={gameState.activePiece} />
+          <Preview piece={gameState.nextPiece} />
         </div>
         <div>
           <button onClick={() => setGameState(newGame)}>New Game</button>
