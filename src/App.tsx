@@ -8,6 +8,21 @@ const TICK_INTERVAL_MS = 100;
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
+const NTRIS = 2;
+
+const TITLES = {
+  1: "Monotris",
+  2: "Ditris",
+  3: "Tritris",
+  4: "Tetris",
+  5: "Pentris",
+  6: "Hextris",
+  7: "Heptis",
+  8: "Octris",
+  9: "Nontris",
+  10: "Decatris",
+};
+
 type GameState = {
   board: boolean[];
   activePiece: Piece;
@@ -297,7 +312,7 @@ function Board({ board, activePiece }: BoardProps) {
 export default function App() {
   return (
     <div className="App">
-      <h1>Monotris</h1>
+      <h1>{TITLES[NTRIS]}</h1>
       <Game />
       <div className="footer">
         <a href="https://github.com/cthulahoops/monotris/">Github</a>
