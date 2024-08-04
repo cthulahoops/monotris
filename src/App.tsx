@@ -4,7 +4,7 @@ import "./App.css";
 import { useGameClock, useEventListener } from "./hooks";
 
 interface CustomCSS extends CSSProperties {
-  "--block-type": number;
+  "--block-hue": number;
 }
 
 const TICK_INTERVAL_MS = 300;
@@ -300,7 +300,7 @@ function Preview({ piece }: { piece: Piece }) {
         return (
           <Block
             key={index}
-            position={{ x: block.x + 2, y: block.y + 2 }}
+            position={{ x: block.x + 1, y: block.y + 1 }}
             block_type={piece.block_type}
           />
         );
@@ -352,7 +352,7 @@ function Block({ position, block_type }: BlockProps) {
         {
           gridColumn: position.x + 1,
           gridRow: position.y + 1,
-          "--block-type": block_type,
+          "--block-hue": ((block_type - 1) / PIECES[NTRIS].length) * 360,
         } as CustomCSS
       }
       className="filled"

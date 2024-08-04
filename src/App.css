@@ -78,9 +78,8 @@ h1 {
 }
 
 .filled {
-  --hue: calc(180deg * var(--block-type));
-  background-color: hsl(var(--hue), 90%, 60%);
-  box-shadow: 0px 0px 0px 2px hsl(var(--hue), 80%, 30%) inset;
+  background-color: hsl(var(--block-hue), 90%, 60%);
+  box-shadow: 0px 0px 0px 2px hsl(var(--block-hue), 80%, 30%) inset;
 }
 
 .preview {
