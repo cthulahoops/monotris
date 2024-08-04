@@ -3,7 +3,7 @@ import "./App.css";
 
 import { useGameClock, useEventListener } from "./hooks";
 
-const TICK_INTERVAL_MS = 100;
+const TICK_INTERVAL_MS = 300;
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
@@ -97,9 +97,9 @@ const PIECES = {
   ],
   3: [
     [
+      { x: -1, y: 0 },
       { x: 0, y: 0 },
       { x: 1, y: 0 },
-      { x: 2, y: 0 },
     ],
     [
       { x: 0, y: 0 },
@@ -294,8 +294,8 @@ function Preview({ piece }: { piece: Piece }) {
           <div
             key={index}
             style={{
-              gridRow: block.y + 1,
-              gridColumn: block.x + 1,
+              gridRow: block.y + 2,
+              gridColumn: block.x + 2,
             }}
             className="filled"
           />
