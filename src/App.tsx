@@ -8,7 +8,7 @@ const TICK_INTERVAL_MS = 100;
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
-const NTRIS = 2;
+const NTRIS = 3;
 
 const TITLES = {
   1: "Monotris",
@@ -87,18 +87,40 @@ function fixPieceToBoard(board: Board, piece: Piece) {
   return newBoard;
 }
 
+const PIECES = {
+  1: [[{ x: 0, y: 0 }]],
+  2: [
+    [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+    ],
+  ],
+  3: [
+    [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+    ],
+    [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+    ],
+  ],
+};
+
 function newPiece(): Piece {
+  const choices = PIECES[NTRIS];
+  const blocks = choices[Math.floor(Math.random() * choices.length)];
   return {
     position: {
       x: Math.floor(BOARD_WIDTH / 2),
       y: 0,
     },
-    blocks: [
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-    ],
+    blocks: blocks,
   };
 }
+
 function newGame(): GameState {
   return {
     board: empty_board(),
