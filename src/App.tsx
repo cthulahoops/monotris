@@ -7,14 +7,7 @@ interface CustomCSS extends CSSProperties {
   "--block-hue": number;
 }
 
-const TICK_INTERVAL_MS = 300;
-
-const BOARD_WIDTH = 10;
-const BOARD_HEIGHT = 20;
-
-const NTRIS = 3;
-
-const TITLES = {
+const TITLES: { [key: number]: string } = {
   1: "Monotris",
   2: "Ditris",
   3: "Tritris",
@@ -26,6 +19,28 @@ const TITLES = {
   9: "Nontris",
   10: "Decatris",
 };
+
+function getNtris(): number {
+  const hostname = window.location.hostname.split(".")[0];
+  if (hostname === "localhost") {
+    return 4;
+  }
+
+  for (let i = 1; i <= 10; i++) {
+    if (hostname === TITLES[i].toLowerCase()) {
+      return i;
+    }
+  }
+
+  return 1;
+}
+
+const TICK_INTERVAL_MS = 300;
+
+const BOARD_WIDTH = 10;
+const BOARD_HEIGHT = 20;
+
+const NTRIS = getNtris();
 
 type GameState = {
   board: Board;
@@ -47,16 +62,19 @@ type Piece = {
 
 type Board = number[];
 
-function rotatePiece(piece: Piece) {
-  const newBlocks = piece.blocks.map((block) => {
+function rotateCoords(coords: Coord[]): Coord[] {
+  return coords.map((coord) => {
     return {
-      x: block.y,
-      y: -block.x,
+      x: coord.y,
+      y: -coord.x,
     };
   });
+}
+
+function rotatePiece(piece: Piece): Piece {
   return {
     ...piece,
-    blocks: newBlocks,
+    blocks: rotateCoords(piece.blocks),
   };
 }
 
@@ -92,7 +110,7 @@ function fixPieceToBoard(board: Board, piece: Piece) {
   return newBoard;
 }
 
-const PIECES = {
+const PIECES: { [key: number]: Coord[][] } = {
   1: [[{ x: 0, y: 0 }]],
   2: [
     [
