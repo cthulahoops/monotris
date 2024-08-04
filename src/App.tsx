@@ -1,7 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, CSSProperties } from "react";
 import "./App.css";
 
 import { useGameClock, useEventListener } from "./hooks";
+
+interface CustomCSS extends CSSProperties {
+  "--block-type": number;
+}
 
 const TICK_INTERVAL_MS = 300;
 
@@ -24,7 +28,7 @@ const TITLES = {
 };
 
 type GameState = {
-  board: boolean[];
+  board: Board;
   activePiece: Piece;
   nextPiece: Piece;
   score: number;
@@ -38,9 +42,10 @@ type Coord = {
 type Piece = {
   position: Coord;
   blocks: Coord[];
+  block_type: number;
 };
 
-type Board = boolean[];
+type Board = number[];
 
 function rotatePiece(piece: Piece) {
   const newBlocks = piece.blocks.map((block) => {
@@ -74,7 +79,7 @@ function index_to_coords(index: number): Coord {
 function empty_board(): Board {
   const board = [];
   for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++) {
-    board.push(false);
+    board.push(0);
   }
   return board;
 }
@@ -82,7 +87,7 @@ function empty_board(): Board {
 function fixPieceToBoard(board: Board, piece: Piece) {
   const newBoard = [...board];
   for (const block of piece_coords(piece)) {
-    newBoard[block.y * BOARD_WIDTH + block.x] = true;
+    newBoard[block.y * BOARD_WIDTH + block.x] = piece.block_type;
   }
   return newBoard;
 }
@@ -111,13 +116,15 @@ const PIECES = {
 
 function newPiece(): Piece {
   const choices = PIECES[NTRIS];
-  const blocks = choices[Math.floor(Math.random() * choices.length)];
+  const choice = Math.floor(Math.random() * choices.length);
+  const blocks = choices[choice];
   return {
     position: {
       x: Math.floor(BOARD_WIDTH / 2),
       y: 0,
     },
     blocks: blocks,
+    block_type: choice + 1,
   };
 }
 
@@ -182,7 +189,7 @@ function isFullRow(board: Board, y: number) {
 function removeRow(board: Board, y: number) {
   board.splice(BOARD_WIDTH * y, BOARD_WIDTH);
   for (let x = 0; x < BOARD_WIDTH; x++) {
-    board.unshift(false);
+    board.unshift(0);
   }
 }
 
@@ -291,13 +298,10 @@ function Preview({ piece }: { piece: Piece }) {
     <div className="preview">
       {piece.blocks.map((block, index) => {
         return (
-          <div
+          <Block
             key={index}
-            style={{
-              gridRow: block.y + 2,
-              gridColumn: block.x + 2,
-            }}
-            className="filled"
+            position={{ x: block.x + 2, y: block.y + 2 }}
+            block_type={piece.block_type}
           />
         );
       })}
@@ -316,22 +320,43 @@ function Board({ board, activePiece }: BoardProps) {
   return (
     <div className="board">
       {board.map((value, index) => {
+        if (!value) {
+          return;
+        }
         const coords = index_to_coords(index);
+        return <Block key={index} position={coords} block_type={value} />;
+      })}
+
+      {activePieceCoords.map((block, index) => {
         return (
-          <div
-            key={index}
-            className={
-              value ||
-              activePieceCoords.some(
-                (piece) => piece.x == coords.x && piece.y == coords.y,
-              )
-                ? "filled"
-                : "empty"
-            }
+          <Block
+            key={index + 1000}
+            position={block}
+            block_type={activePiece.block_type}
           />
         );
       })}
     </div>
+  );
+}
+
+type BlockProps = {
+  position: Coord;
+  block_type: number;
+};
+
+function Block({ position, block_type }: BlockProps) {
+  return (
+    <div
+      style={
+        {
+          gridColumn: position.x + 1,
+          gridRow: position.y + 1,
+          "--block-type": block_type,
+        } as CustomCSS
+      }
+      className="filled"
+    />
   );
 }
 
