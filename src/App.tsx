@@ -1,4 +1,5 @@
 import { useState, useEffect, CSSProperties } from "react";
+import { Helmet } from "react-helmet";
 import "./App.css";
 
 import { useGameClock, useEventListener } from "./hooks";
@@ -379,9 +380,13 @@ function Block({ position, block_type }: BlockProps) {
 }
 
 export default function App() {
+  const title = TITLES[NTRIS];
   return (
     <div className="App">
-      <h1>{TITLES[NTRIS]}</h1>
+      <Helmet>
+        <title>{title}</title>
+      </Helmet>
+      <h1>{title}</h1>
       <Game />
       <div className="footer">
         <a href="https://github.com/cthulahoops/monotris/">Github</a>
