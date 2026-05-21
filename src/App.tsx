@@ -93,7 +93,9 @@ function empty_board(): Board {
 function fixPieceToBoard(board: Board, piece: Piece) {
   const newBoard = [...board];
   for (const block of piece_coords(piece)) {
-    newBoard[block.y * BOARD_WIDTH + block.x] = piece.block_type;
+    if (block.y >= 0) {
+      newBoard[block.y * BOARD_WIDTH + block.x] = piece.block_type;
+    }
   }
   return newBoard;
 }
@@ -102,10 +104,11 @@ function newPiece(): Piece {
   const choices = getPieces(NTRIS);
   const choice = Math.floor(Math.random() * choices.length);
   const blocks = choices[choice];
+  const maxY = Math.max(...blocks.map((block) => block.y));
   return {
     position: {
       x: Math.floor(BOARD_WIDTH / 2),
-      y: 0,
+      y: -1 - maxY,
     },
     blocks: blocks,
     block_type: choice + 1,
@@ -132,12 +135,7 @@ function movePiece(piece: Piece, offset: Coord) {
 }
 
 function isOutOfBounds(coord: Coord) {
-  return (
-    coord.x < 0 ||
-    coord.x >= BOARD_WIDTH ||
-    coord.y < 0 ||
-    coord.y >= BOARD_HEIGHT
-  );
+  return coord.x < 0 || coord.x >= BOARD_WIDTH || coord.y >= BOARD_HEIGHT;
 }
 
 function isPieceColliding(board: Board, piece: Piece) {
@@ -311,15 +309,17 @@ function Board({ board, activePiece }: BoardProps) {
         return <Block key={index} position={coords} block_type={value} />;
       })}
 
-      {activePieceCoords.map((block, index) => {
-        return (
-          <Block
-            key={index + 1000}
-            position={block}
-            block_type={activePiece.block_type}
-          />
-        );
-      })}
+      {activePieceCoords
+        .filter((block) => block.y >= 0)
+        .map((block, index) => {
+          return (
+            <Block
+              key={index + 1000}
+              position={block}
+              block_type={activePiece.block_type}
+            />
+          );
+        })}
     </div>
   );
 }
