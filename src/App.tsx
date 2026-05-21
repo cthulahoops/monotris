@@ -23,11 +23,13 @@ const TITLES: { [key: number]: string } = {
 };
 
 function getNtris(): number {
-  const hostname = window.location.hostname.split(".")[0];
-  if (hostname === "localhost") {
-    return 5;
+  const params = new URLSearchParams(window.location.search);
+  const paramValue = Number(params.get("n"));
+  if (Number.isInteger(paramValue) && paramValue >= 1 && paramValue <= 10) {
+    return paramValue;
   }
 
+  const hostname = window.location.hostname.split(".")[0];
   for (let i = 1; i <= 10; i++) {
     if (hostname === TITLES[i].toLowerCase()) {
       return i;
