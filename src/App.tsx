@@ -3,7 +3,19 @@ import { Helmet } from "react-helmet";
 import "./App.css";
 
 import { useGameClock, useEventListener } from "./hooks";
-import { getPieces, rotateCoords, type Coord } from "./pieces";
+import {
+  BOARD_WIDTH,
+  moveLeft,
+  moveRight,
+  newGame,
+  rotate,
+  softDrop,
+  tick as tickGame,
+  type Board,
+  type GameState,
+  type Piece,
+} from "./game";
+import { getPieces, type Coord } from "./pieces";
 
 interface CustomCSS extends CSSProperties {
   "--block-hue": number;
@@ -40,34 +52,12 @@ function getNtris(): number {
 }
 
 const TICK_INTERVAL_MS = 300;
-
-const BOARD_WIDTH = 10;
-const BOARD_HEIGHT = 20;
-
 const NTRIS = getNtris();
 
-type GameState = {
-  board: Board;
-  activePiece: Piece;
-  nextPiece: Piece;
-  score: number;
-  gameOver: boolean;
-};
-
-type Piece = {
-  position: Coord;
-  blocks: Coord[];
-  block_type: number;
-};
-
-type Board = number[];
-
-function rotatePiece(piece: Piece): Piece {
-  return {
-    ...piece,
-    blocks: rotateCoords(piece.blocks),
-  };
-}
+const KEY_LEFT = 37;
+const KEY_RIGHT = 39;
+const KEY_UP = 38;
+const KEY_DOWN = 40;
 
 function piece_coords(piece: Piece): Coord[] {
   return piece.blocks.map((block) => {
@@ -85,194 +75,32 @@ function index_to_coords(index: number): Coord {
   };
 }
 
-function empty_board(): Board {
-  const board = [];
-  for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++) {
-    board.push(0);
-  }
-  return board;
-}
-
-function fixPieceToBoard(board: Board, piece: Piece) {
-  const newBoard = [...board];
-  for (const block of piece_coords(piece)) {
-    if (block.y >= 0) {
-      newBoard[block.y * BOARD_WIDTH + block.x] = piece.block_type;
-    }
-  }
-  return newBoard;
-}
-
-function newPiece(): Piece {
-  const choices = getPieces(NTRIS);
-  const choice = Math.floor(Math.random() * choices.length);
-  const blocks = choices[choice];
-  const maxY = Math.max(...blocks.map((block) => block.y));
-  return {
-    position: {
-      x: Math.floor(BOARD_WIDTH / 2),
-      y: -1 - maxY,
-    },
-    blocks: blocks,
-    block_type: choice + 1,
-  };
-}
-
-function newGame(): GameState {
-  return {
-    board: empty_board(),
-    activePiece: newPiece(),
-    nextPiece: newPiece(),
-    score: 0,
-    gameOver: false,
-  };
-}
-
-function movePiece(piece: Piece, offset: Coord) {
-  return {
-    ...piece,
-    position: {
-      x: piece.position.x + offset.x,
-      y: piece.position.y + offset.y,
-    },
-  };
-}
-
-function isOutOfBounds(coord: Coord) {
-  return coord.x < 0 || coord.x >= BOARD_WIDTH || coord.y >= BOARD_HEIGHT;
-}
-
-function isPieceColliding(board: Board, piece: Piece) {
-  return piece_coords(piece).some((block) => isFilled(board, block));
-}
-
-function isFilled(board: Board, coords: Coord) {
-  return board[coords.y * BOARD_WIDTH + coords.x] || isOutOfBounds(coords);
-}
-
-function movePieceChecked(gameState: GameState, offset: Coord) {
-  const newPiece = movePiece(gameState.activePiece, offset);
-
-  if (isPieceColliding(gameState.board, newPiece)) {
-    return gameState;
-  }
-
-  return {
-    ...gameState,
-    activePiece: newPiece,
-  };
-}
-
-function isFullRow(board: Board, y: number) {
-  for (let x = 0; x < BOARD_WIDTH; x++) {
-    if (!isFilled(board, { x, y })) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function removeRow(board: Board, y: number) {
-  board.splice(BOARD_WIDTH * y, BOARD_WIDTH);
-  for (let x = 0; x < BOARD_WIDTH; x++) {
-    board.unshift(0);
-  }
-}
-
-function respawnPiece(gameState: GameState) {
-  if (piece_coords(gameState.activePiece).some((block) => block.y < 0)) {
-    return {
-      ...gameState,
-      gameOver: true,
-    };
-  }
-
-  const board = fixPieceToBoard(gameState.board, gameState.activePiece);
-
-  let rowsCleared = 0;
-
-  for (let y = 0; y < BOARD_HEIGHT; y++) {
-    if (isFullRow(board, y)) {
-      removeRow(board, y);
-      rowsCleared += 1;
-    }
-  }
-
-  return {
-    ...gameState,
-    board,
-    score: gameState.score + (rowsCleared * (rowsCleared + 1)) / 2,
-    activePiece: gameState.nextPiece,
-    nextPiece: newPiece(),
-  };
-}
-
-function isPieceOnGround(gameState: GameState) {
-  return piece_coords(gameState.activePiece).some((pos) =>
-    isFilled(gameState.board, { x: pos.x, y: pos.y + 1 }),
-  );
-}
-
-function setPiece(gameState: GameState, piece: Piece) {
-  if (isPieceColliding(gameState.board, piece)) {
-    return gameState;
-  }
-  return {
-    ...gameState,
-    activePiece: piece,
-  };
-}
-
-const LEFT = { x: -1, y: 0 };
-const RIGHT = { x: 1, y: 0 };
-const DOWN = { x: 0, y: 1 };
-
-const KEY_LEFT = 37;
-const KEY_RIGHT = 39;
-const KEY_UP = 38;
-const KEY_DOWN = 40;
-
-function handleInput(gameState: GameState, keyCode: number): GameState {
-  if (gameState.gameOver) {
-    return gameState;
-  }
-
-  switch (keyCode) {
-    case KEY_LEFT:
-      return movePieceChecked(gameState, LEFT);
-    case KEY_RIGHT:
-      return movePieceChecked(gameState, RIGHT);
-      break;
-    case KEY_UP:
-      return setPiece(gameState, rotatePiece(gameState.activePiece));
-    case KEY_DOWN:
-      return movePieceChecked(gameState, DOWN);
-    default:
-      return gameState;
-  }
-}
-
-function handleTick(gameState: GameState): GameState {
-  if (gameState.gameOver) {
-    return gameState;
-  }
-
-  if (isPieceOnGround(gameState)) {
-    return respawnPiece(gameState);
-  }
-  return movePieceChecked(gameState, DOWN);
-}
-
 function Game() {
-  const [gameState, setGameState] = useState<GameState>(newGame());
+  const pieceCatalog = getPieces(NTRIS);
+  const [gameState, setGameState] = useState<GameState>(() =>
+    newGame(pieceCatalog),
+  );
   const tick = useGameClock(TICK_INTERVAL_MS);
 
   useEffect(() => {
-    setGameState((gameState) => handleTick(gameState));
+    setGameState((gameState) => tickGame(gameState));
   }, [tick]);
 
-  useEventListener("keydown", (event: any) => {
-    setGameState((gameState) => handleInput(gameState, event.keyCode));
+  useEventListener("keydown", (event: KeyboardEvent) => {
+    setGameState((gameState) => {
+      switch (event.keyCode) {
+        case KEY_LEFT:
+          return moveLeft(gameState);
+        case KEY_RIGHT:
+          return moveRight(gameState);
+        case KEY_UP:
+          return rotate(gameState);
+        case KEY_DOWN:
+          return softDrop(gameState);
+        default:
+          return gameState;
+      }
+    });
   });
 
   return (
@@ -285,17 +113,25 @@ function Game() {
         </div>
         <div>
           Next Block:
-          <Preview piece={gameState.nextPiece} />
+          <Preview piece={gameState.nextPiece} pieceCount={pieceCatalog.length} />
         </div>
         <div>
-          <button onClick={() => setGameState(newGame)}>New Game</button>
+          <button onClick={() => setGameState(newGame(pieceCatalog))}>
+            New Game
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function Preview({ piece }: { piece: Piece }) {
+function Preview({
+  piece,
+  pieceCount,
+}: {
+  piece: Piece;
+  pieceCount: number;
+}) {
   return (
     <div className="preview">
       {piece.blocks.map((block, index) => {
@@ -304,6 +140,7 @@ function Preview({ piece }: { piece: Piece }) {
             key={index}
             position={{ x: block.x + 1, y: block.y + 1 }}
             block_type={piece.block_type}
+            pieceCount={pieceCount}
           />
         );
       })}
@@ -318,6 +155,7 @@ type BoardProps = {
 
 function Board({ board, activePiece }: BoardProps) {
   const activePieceCoords = piece_coords(activePiece);
+  const pieceCount = getPieces(NTRIS).length;
 
   return (
     <div className="board">
@@ -326,7 +164,14 @@ function Board({ board, activePiece }: BoardProps) {
           return;
         }
         const coords = index_to_coords(index);
-        return <Block key={index} position={coords} block_type={value} />;
+        return (
+          <Block
+            key={index}
+            position={coords}
+            block_type={value}
+            pieceCount={pieceCount}
+          />
+        );
       })}
 
       {activePieceCoords
@@ -337,6 +182,7 @@ function Board({ board, activePiece }: BoardProps) {
               key={index + 1000}
               position={block}
               block_type={activePiece.block_type}
+              pieceCount={pieceCount}
             />
           );
         })}
