@@ -193,16 +193,17 @@ function Board({ board, activePiece }: BoardProps) {
 type BlockProps = {
   position: Coord;
   block_type: number;
+  pieceCount: number;
 };
 
-function Block({ position, block_type }: BlockProps) {
+function Block({ position, block_type, pieceCount }: BlockProps) {
   return (
     <div
       style={
         {
           gridColumn: position.x + 1,
           gridRow: position.y + 1,
-          "--block-hue": ((block_type - 1) / getPieces(NTRIS).length) * 360,
+          "--block-hue": ((block_type - 1) / pieceCount) * 360,
         } as CustomCSS
       }
       className="filled"
