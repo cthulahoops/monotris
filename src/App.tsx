@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import "./App.css";
 
 import { useGameClock, useEventListener } from "./hooks";
+import { getPieces, rotateCoords, type Coord } from "./pieces";
 
 interface CustomCSS extends CSSProperties {
   "--block-hue": number;
@@ -24,7 +25,7 @@ const TITLES: { [key: number]: string } = {
 function getNtris(): number {
   const hostname = window.location.hostname.split(".")[0];
   if (hostname === "localhost") {
-    return 4;
+    return 5;
   }
 
   for (let i = 1; i <= 10; i++) {
@@ -50,11 +51,6 @@ type GameState = {
   score: number;
 };
 
-type Coord = {
-  x: number;
-  y: number;
-};
-
 type Piece = {
   position: Coord;
   blocks: Coord[];
@@ -62,15 +58,6 @@ type Piece = {
 };
 
 type Board = number[];
-
-function rotateCoords(coords: Coord[]): Coord[] {
-  return coords.map((coord) => {
-    return {
-      x: coord.y,
-      y: -coord.x,
-    };
-  });
-}
 
 function rotatePiece(piece: Piece): Piece {
   return {
@@ -111,30 +98,8 @@ function fixPieceToBoard(board: Board, piece: Piece) {
   return newBoard;
 }
 
-const PIECES: { [key: number]: Coord[][] } = {
-  1: [[{ x: 0, y: 0 }]],
-  2: [
-    [
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-    ],
-  ],
-  3: [
-    [
-      { x: -1, y: 0 },
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-    ],
-    [
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-      { x: 0, y: 1 },
-    ],
-  ],
-};
-
 function newPiece(): Piece {
-  const choices = PIECES[NTRIS];
+  const choices = getPieces(NTRIS);
   const choice = Math.floor(Math.random() * choices.length);
   const blocks = choices[choice];
   return {
@@ -371,7 +336,7 @@ function Block({ position, block_type }: BlockProps) {
         {
           gridColumn: position.x + 1,
           gridRow: position.y + 1,
-          "--block-hue": ((block_type - 1) / PIECES[NTRIS].length) * 360,
+          "--block-hue": ((block_type - 1) / getPieces(NTRIS).length) * 360,
         } as CustomCSS
       }
       className="filled"
