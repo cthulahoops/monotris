@@ -1,5 +1,5 @@
 import { useState, useEffect, CSSProperties } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import "./App.css";
 
 import { useGameClock, useEventListener } from "./hooks";
@@ -214,15 +214,17 @@ function Block({ position, block_type, pieceCount }: BlockProps) {
 export default function App() {
   const title = TITLES[NTRIS];
   return (
-    <div className="App">
-      <Helmet>
-        <title>{title}</title>
-      </Helmet>
-      <h1>{title}</h1>
-      <Game />
-      <div className="footer">
-        <a href="https://github.com/cthulahoops/monotris/">Github</a>
+    <HelmetProvider>
+      <div className="App">
+        <Helmet>
+          <title>{title}</title>
+        </Helmet>
+        <h1>{title}</h1>
+        <Game />
+        <div className="footer">
+          <a href="https://github.com/cthulahoops/monotris/">Github</a>
+        </div>
       </div>
-    </div>
+    </HelmetProvider>
   );
 }
