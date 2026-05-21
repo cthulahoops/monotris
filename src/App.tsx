@@ -49,6 +49,7 @@ type GameState = {
   activePiece: Piece;
   nextPiece: Piece;
   score: number;
+  gameOver: boolean;
 };
 
 type Piece = {
@@ -121,6 +122,7 @@ function newGame(): GameState {
     activePiece: newPiece(),
     nextPiece: newPiece(),
     score: 0,
+    gameOver: false,
   };
 }
 
@@ -176,6 +178,13 @@ function removeRow(board: Board, y: number) {
 }
 
 function respawnPiece(gameState: GameState) {
+  if (piece_coords(gameState.activePiece).some((block) => block.y < 0)) {
+    return {
+      ...gameState,
+      gameOver: true,
+    };
+  }
+
   const board = fixPieceToBoard(gameState.board, gameState.activePiece);
 
   let rowsCleared = 0;
@@ -222,6 +231,10 @@ const KEY_UP = 38;
 const KEY_DOWN = 40;
 
 function handleInput(gameState: GameState, keyCode: number): GameState {
+  if (gameState.gameOver) {
+    return gameState;
+  }
+
   switch (keyCode) {
     case KEY_LEFT:
       return movePieceChecked(gameState, LEFT);
@@ -238,6 +251,10 @@ function handleInput(gameState: GameState, keyCode: number): GameState {
 }
 
 function handleTick(gameState: GameState): GameState {
+  if (gameState.gameOver) {
+    return gameState;
+  }
+
   if (isPieceOnGround(gameState)) {
     return respawnPiece(gameState);
   }
@@ -262,6 +279,7 @@ function Game() {
       <div className="panel">
         <div>
           Score: <p className="score-value">{gameState.score}</p>
+          {gameState.gameOver ? <p>Game Over</p> : null}
         </div>
         <div>
           Next Block:
