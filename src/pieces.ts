@@ -50,8 +50,8 @@ export function generatePieces(n: number): Coord[][] {
 export function rotateCoords(coords: Coord[]): Coord[] {
   return coords.map((coord) => {
     return {
-      x: coord.y,
-      y: -coord.x,
+      x: -coord.y,
+      y: coord.x,
     };
   });
 }
